@@ -1,8 +1,13 @@
 {
   "dependencies": {
     "@azure/msal-node": "^3.6.2",
+    "crypto": "^1.0.1",
+    "dotenv": "^17.0.1",
     "express": "^5.1.0",
+    "express-rate-limit": "^7.5.1",
     "express-session": "^1.18.1",
-    "mariadb": "^3.4.4"
+    "helmet": "^8.1.0",
+    "mariadb": "^3.4.4",
+    "validator": "^13.15.15"
   }
 }
