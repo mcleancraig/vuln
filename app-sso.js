@@ -273,8 +273,8 @@ app.post('/search', ensureAuthenticated, csrfProtection, async (req, res) => {
     try {
         conn = await pool.getConnection();
         
-        // Find the hostname from the 'users' table
-        const userRows = await conn.query("SELECT host FROM users WHERE user = ? LIMIT 1", [username]);
+        // Find all hostnames from the 'users' table
+        const userRows = await conn.query("SELECT host FROM users WHERE user = ?", [username]);
         
         if (userRows.length === 0) {
             const safeEmail = escapeHtml(email);
@@ -282,28 +282,38 @@ app.post('/search', ensureAuthenticated, csrfProtection, async (req, res) => {
             return;
         }
         
-        const hostname = userRows[0].host;
+        // Extract and validate all hostnames
+        const hostnames = userRows.map(row => row.host).filter(hostname => {
+            return hostname && hostname.length <= 255;
+        });
         
-        // Validate hostname
-        if (!hostname || hostname.length > 255) {
-            res.send('<h2>Invalid hostname data</h2><a href="/">Go back</a>');
+        if (hostnames.length === 0) {
+            res.send('<h2>No valid hostname data found</h2><a href="/">Go back</a>');
             return;
         }
         
-        // Find vulnerabilities using partial matching with limit
-        const vulnerabilities = await conn.query("SELECT * FROM vulnerabilities WHERE hostname LIKE ? LIMIT 1000", [`%${hostname}%`]);
+        // Find vulnerabilities for all hostnames using partial matching with limit
+        let allVulnerabilities = [];
+        const hostnameConditions = hostnames.map(() => "hostname LIKE ?");
+        const hostnameParams = hostnames.map(hostname => `%${hostname}%`);
         
-        const safeHostname = escapeHtml(hostname);
+        const vulnerabilities = await conn.query(
+            `SELECT * FROM vulnerabilities WHERE ${hostnameConditions.join(' OR ')} LIMIT 1000`, 
+            hostnameParams
+        );
+        
+        const safeHostnames = hostnames.map(h => escapeHtml(h)).join(', ');
         const safeEmail = escapeHtml(email);
         
-        let html = `<h2>Vulnerabilities for hostnames containing "${safeHostname}"</h2>`;
+        let html = `<h2>Vulnerabilities for hostnames containing: ${safeHostnames}</h2>`;
         html += `<p><strong>Searched for user:</strong> ${safeEmail}</p>`;
+        html += `<p><strong>Total hostnames found:</strong> ${hostnames.length}</p>`;
         html += '<a href="/" style="margin-bottom: 20px; display: inline-block;">← Back to Search</a>';
         
         if (vulnerabilities.length > 0) {
             // Store results in session for CSV download
             req.session.lastResults = vulnerabilities;
-            req.session.lastHostname = hostname;
+            req.session.lastHostnames = hostnames;
             
             html += '<div style="margin-bottom: 20px;">';
             html += '<a href="/download-csv" style="background-color: #28a745; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px; margin-right: 10px;">📥 Download CSV</a>';
@@ -327,7 +337,7 @@ app.post('/search', ensureAuthenticated, csrfProtection, async (req, res) => {
             });
             html += '</table>';
         } else {
-            html += `<p>No vulnerabilities found for hostnames containing: <strong>${safeHostname}</strong></p>`;
+            html += `<p>No vulnerabilities found for hostnames: <strong>${safeHostnames}</strong></p>`;
         }
         
         res.send(html);
@@ -342,7 +352,7 @@ app.post('/search', ensureAuthenticated, csrfProtection, async (req, res) => {
 // CSV download route
 app.get('/download-csv', ensureAuthenticated, (req, res) => {
     const results = req.session.lastResults;
-    const hostname = req.session.lastHostname;
+    const hostnames = req.session.lastHostnames;
     
     if (!results || results.length === 0) {
         res.send('<h2>No results to download</h2><a href="/">Go back</a>');
@@ -367,8 +377,8 @@ app.get('/download-csv', ensureAuthenticated, (req, res) => {
     
     // Set headers for file download
     const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-    const safeHostname = hostname.replace(/[^a-zA-Z0-9._-]/g, '_');
-    const filename = `vulnerabilities_${safeHostname}_${timestamp}.csv`;
+    const safeHostnames = hostnames.map(h => h.replace(/[^a-zA-Z0-9._-]/g, '_')).join('_');
+    const filename = `vulnerabilities_${safeHostnames}_${timestamp}.csv`;
     
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
