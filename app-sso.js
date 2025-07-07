@@ -29,10 +29,10 @@ const cca = new ConfidentialClientApplication(msalConfig);
 
 // Database connection pool
 const pool = mariadb.createPool({
-    host: 'vip.lan.candi-home.com',
-    user: 'vuln',
-    password: 'vuln',
-    database: 'vulntest'
+    host: process.env.DB_HOST || 'vip.lan.candi-home.com',
+    user: process.env.DB_USER || 'vuln',
+    password: process.env.DB_PASSWORD || 'vuln',
+    database: process.env.DB_NAME || 'vulntest'
 });
 
 // Middleware
