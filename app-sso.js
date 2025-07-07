@@ -75,7 +75,7 @@ app.get('/', ensureAuthenticated, (req, res) => {
                 <h2>Welcome, ${req.session.user.name || 'User'}</h2>
                 <p><strong>Email:</strong> ${req.session.user.username}</p>
             </div>
-
+            
             <h2>Find Vulnerabilities</h2>
             <p>Click the button below to search for vulnerabilities associated with your account:</p>
             <form action="/search" method="post">
@@ -137,7 +137,7 @@ app.get('/auth/logout', (req, res) => {
 // Search route
 app.post('/search', ensureAuthenticated, async (req, res) => {
     const email = req.session.user.username;
-
+    
     if (!email) {
         res.send('<h2>Error: Could not retrieve email from your account</h2><a href="/">Go back</a>');
         return;
@@ -147,33 +147,40 @@ app.post('/search', ensureAuthenticated, async (req, res) => {
     let conn;
     try {
         conn = await pool.getConnection();
-
+        
         // Find the hostname from the 'users' table
         const userRows = await conn.query("SELECT host FROM users WHERE user = ?", [username]);
-
+        
         if (userRows.length === 0) {
             res.send(`<h2>No hostname found for the email: ${email}</h2><a href="/">Go back</a>`);
             return;
         }
-
+        
         const hostname = userRows[0].host;
-
+        
         // Find vulnerabilities using partial matching
         const vulnerabilities = await conn.query("SELECT * FROM vulnerabilities WHERE hostname LIKE ?", [`%${hostname}%`]);
-
+        
         let html = `<h2>Vulnerabilities for hostnames containing "${hostname}"</h2>`;
         html += `<p><strong>Searched for user:</strong> ${email}</p>`;
         html += '<a href="/" style="margin-bottom: 20px; display: inline-block;">← Back to Search</a>';
-
+        
         if (vulnerabilities.length > 0) {
+            // Store results in session for CSV download
+            req.session.lastResults = vulnerabilities;
+            req.session.lastHostname = hostname;
+            
+            html += '<div style="margin-bottom: 20px;">';
+            html += '<a href="/download-csv" style="background-color: #28a745; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px; margin-right: 10px;">📥 Download CSV</a>';
+            html += '</div>';
             html += '<table border="1" style="width:100%; border-collapse: collapse;"><tr>';
-
+            
             // Create table headers
             for (const column in vulnerabilities[0]) {
                 html += `<th style="padding: 8px; border: 1px solid #ddd; background-color: #f2f2f2;">${column}</th>`;
             }
             html += '</tr>';
-
+            
             // Add table rows
             vulnerabilities.forEach(row => {
                 html += '<tr>';
@@ -186,7 +193,7 @@ app.post('/search', ensureAuthenticated, async (req, res) => {
         } else {
             html += `<p>No vulnerabilities found for hostnames containing: <strong>${hostname}</strong></p>`;
         }
-
+        
         res.send(html);
     } catch (err) {
         console.error(err);
@@ -194,6 +201,45 @@ app.post('/search', ensureAuthenticated, async (req, res) => {
     } finally {
         if (conn) conn.release();
     }
+});
+
+// CSV download route
+app.get('/download-csv', ensureAuthenticated, (req, res) => {
+    const results = req.session.lastResults;
+    const hostname = req.session.lastHostname;
+    
+    if (!results || results.length === 0) {
+        res.send('<h2>No results to download</h2><a href="/">Go back</a>');
+        return;
+    }
+    
+    // Generate CSV content
+    const headers = Object.keys(results[0]);
+    let csvContent = headers.join(',') + '\n';
+    
+    results.forEach(row => {
+        const values = headers.map(header => {
+            const value = row[header];
+            // Escape quotes and wrap in quotes if contains comma, quote, or newline
+            if (value === null || value === undefined) {
+                return '';
+            }
+            const stringValue = String(value);
+            if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+                return '"' + stringValue.replace(/"/g, '""') + '"';
+            }
+            return stringValue;
+        });
+        csvContent += values.join(',') + '\n';
+    });
+    
+    // Set headers for file download
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+    const filename = `vulnerabilities_${hostname}_${timestamp}.csv`;
+    
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(csvContent);
 });
 
 app.listen(port, () => {
