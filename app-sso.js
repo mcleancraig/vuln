@@ -6,10 +6,25 @@ const rateLimit = require('express-rate-limit');
 const validator = require('validator');
 const crypto = require('crypto');
 const { ConfidentialClientApplication } = require('@azure/msal-node');
+const { execSync } = require('child_process');
 require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+// Get git version information
+let gitVersion = 'unknown';
+try {
+    gitVersion = execSync('git describe --tags --always --dirty', { encoding: 'utf8' }).trim();
+} catch (error) {
+    console.warn('Could not retrieve git version:', error.message);
+    // Try to get just the commit hash if tags are not available
+    try {
+        gitVersion = execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim();
+    } catch (error2) {
+        console.warn('Could not retrieve git commit hash:', error2.message);
+    }
+}
 
 // Security middleware
 app.use(helmet({
@@ -126,7 +141,7 @@ app.use(session({
     name: 'sessionId' // Don't use default session name
 }));
 
-// Authentication middleware
+// Routes
 function ensureAuthenticated(req, res, next) {
     if (req.session.user) {
         return next();
@@ -147,6 +162,15 @@ function csrfProtection(req, res, next) {
     next();
 }
 
+// Generate version footer HTML
+function getVersionFooter() {
+    return `
+        <footer style="margin-top: 40px; padding: 20px 0; border-top: 1px solid #ddd; text-align: center; color: #666; font-size: 12px;">
+            <p>Version: ${escapeHtml(gitVersion)}</p>
+        </footer>
+    `;
+}
+
 // Generate CSRF token
 function generateCsrfToken(req) {
     if (!req.session.csrf_token) {
@@ -154,8 +178,6 @@ function generateCsrfToken(req) {
     }
     return req.session.csrf_token;
 }
-
-// Routes
 app.get('/', ensureAuthenticated, (req, res) => {
     const csrfToken = generateCsrfToken(req);
     const userName = escapeHtml(req.session.user.name || 'User');
@@ -189,6 +211,7 @@ app.get('/', ensureAuthenticated, (req, res) => {
                 <input type="hidden" name="csrf_token" value="${csrfToken}">
                 <button type="submit" class="search-button">Search My Vulnerabilities</button>
             </form>
+            ${getVersionFooter()}
         </body>
         </html>
     `);
@@ -339,6 +362,8 @@ app.post('/search', ensureAuthenticated, csrfProtection, async (req, res) => {
         } else {
             html += `<p>No vulnerabilities found for hostnames: <strong>${safeHostnames}</strong></p>`;
         }
+        
+        html += getVersionFooter();
         
         res.send(html);
     } catch (err) {
