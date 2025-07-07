@@ -5,6 +5,7 @@ CREATE TABLE vulnerabilities (
     ip VARCHAR(255),
     hostname VARCHAR(255),
     description TEXT(100000),
+    details TEXT(100000),
     remediation TEXT(10000),
     first_discovered VARCHAR(255),
     last_seen VARCHAR(255),
