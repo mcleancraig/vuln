@@ -1,0 +1,24 @@
+services:
+  vuln:
+    ports: 
+      - "3001:3000"
+    image: "vuln-app"
+    env_file: "./.env"
+    networks:
+      - webnet
+      - mariadb-network
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - "traefik.enable=true"
+        - "traefik.swarm.network=webnet"
+        - "traefik.http.routers.vuln.rule=Host(`vuln.candi-home.com`)" 
+        - "traefik.http.routers.vuln.entrypoints=websecure"
+        - "traefik.http.routers.vuln.tls.certresolver=myresolver"
+        - "traefik.http.services.vuln.loadbalancer.server.port=3000"
+networks:
+  webnet:
+    external: true
+  mariadb-network:
+    external: true
