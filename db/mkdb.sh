@@ -40,7 +40,7 @@ echo "Usage: $0 [-f] [ -d(atabase) | -u(sers table) | -v(ulns table) | -a(ll - d
 
 createDb() {
 echo "Creating Database"
-[ "${FORCE}" != "true" ] && mysql -u root -h ${DB_HOST} -p${ROOT_PASSWORD} -e "use $DB_NAME" && bail "DB already exists - use -f to force"
+[ "${FORCE}" != "true" ] && mysql -u root -h ${DB_HOST} -p${ROOT_PASSWORD} -e "use $DB_NAME" 2>&1 >/dev/null && bail "DB already exists - use -f to force"
 mysql -u root -h ${DB_HOST} -p${ROOT_PASSWORD} << EOF 
  CREATE DATABASE IF NOT EXISTS ${DB_NAME};
  GRANT ALL PRIVILEGES on ${DB_NAME}.* to ${DB_USER}@'%' identified by "${DB_PASSWORD}" WITH GRANT OPTION;
