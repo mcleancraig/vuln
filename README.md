@@ -11,8 +11,8 @@ import tables using e.g.
  `LOAD DATA INFILE '../vuln.csv' INTO TABLE vulnerabilities FIELDS ENCLOSED BY '"' TERMINATED BY ',' LINES TERMINATED BY '\n' IGNORE 1 ROWS  `
 
 ## Building the container
-edit the `docker-build.sh` file to match your needs - leave the environment as that's used by the app
-Run, and push to your repo of choice
-Use the included compose file to pull/run the container
+edit the `docker-build.sh` file to match your needs - leave the environment as that's used by the app  
+Run, and push to your repo of choice  
+Use the included compose file to pull/run the container  
 
 enjoy
