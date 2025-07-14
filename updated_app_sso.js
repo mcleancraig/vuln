@@ -270,7 +270,7 @@ app.get('/hostname-search', ensureAuthenticated, (req, res) => {
                 <input type="hidden" name="csrf_token" value="${csrfToken}">
                 <div class="form-group">
                     <label for="hostname">Hostname:</label>
-                    <input type="text" id="hostname" name="hostname" placeholder="e.g., example.com or server.domain.com" required>
+                    <input type="text" id="hostname" name="hostname" placeholder="e.g., fab-lp-0001" required>
                 </div>
                 <button type="submit" class="search-button">Search Vulnerabilities</button>
             </form>
