@@ -13,18 +13,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // Get git version information
-let gitVersion = 'unknown';
-try {
-    gitVersion = execSync('git describe --tags --always --dirty', { encoding: 'utf8' }).trim();
-} catch (error) {
-    console.warn('Could not retrieve git version:', error.message);
-    // Try to get just the commit hash if tags are not available
-    try {
-        gitVersion = execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim();
-    } catch (error2) {
-        console.warn('Could not retrieve git commit hash:', error2.message);
-    }
-}
+let gitVersion = process.env.GIT_VERSION || process.env.GIT_COMMIT?.substring(0, 7) || 'unknown';
 
 // Security middleware
 app.use(helmet({
