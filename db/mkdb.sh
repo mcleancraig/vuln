@@ -6,7 +6,7 @@ bail() {
 }
  
 # checks
-[ ! -f ../.env ] && echo '../.env file not found'
+[ ! -f ../.env ] && bail '../.env file not found'
 source ../.env
 mysql --version 2>&1>/dev/null || bail "cannot find mysql"
 for var in DB_NAME DB_USER DB_PASSWORD DB_HOST ROOT_PASSWORD
