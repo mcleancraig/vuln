@@ -407,7 +407,7 @@ app.use((error, req, res, next) => {
 
 // Handle 404
 app.use((req, res) => {
-    res.status(404).send('Page not found');
+    res.status(404).send('Page not found ')+ getVersionFooter();
 });
 
 app.listen(port, () => {
