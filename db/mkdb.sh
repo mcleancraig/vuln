@@ -50,7 +50,7 @@ EOF
 
 createUsers() {
 echo "creating user table"
-[ "${FORCE}" = "true" ] && mysql -u ${DB_USER} -h ${DB_HOST} -p${DB_PASSWORD} -e "USE ${DB_NAME}; DROP TABLE users;" 
+[ "${FORCE}" = "true" ] && mysql -u ${DB_USER} -h ${DB_HOST} -p${DB_PASSWORD} -e "USE ${DB_NAME}; DROP TABLE IF EXISTS users;" 
 mysql -u ${DB_USER} -h ${DB_HOST} -p${DB_PASSWORD} << EOF 
 USE ${DB_NAME};
 CREATE TABLE IF NOT EXISTS users (
@@ -63,7 +63,7 @@ EOF
 
 createVulns() {
 echo "creating vuln table"
-[ "${FORCE}" = "true" ] && mysql -u ${DB_USER} -h ${DB_HOST} -p${DB_PASSWORD} -e "USE ${DB_NAME}; DROP TABLE vulns;" 
+[ "${FORCE}" = "true" ] && mysql -u ${DB_USER} -h ${DB_HOST} -p${DB_PASSWORD} -e "USE ${DB_NAME}; DROP TABLE IF EXISTS vulns;" 
 mysql -u ${DB_USER} -h ${DB_HOST} -p${DB_PASSWORD} << EOF 
 USE ${DB_NAME};
 CREATE TABLE IF NOT EXISTS vulns (
