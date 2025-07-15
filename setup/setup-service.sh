@@ -74,6 +74,7 @@ DB_HOST=localhost
 DB_USER=your_db_user
 DB_PASSWORD=your_db_password
 DB_NAME=your_db_name
+ROOT_PASSWORD=<database root password>
 
 # Azure AD configuration
 TENANT_ID=your_tenant_id
@@ -86,8 +87,6 @@ BASE_URL=https://your-domain.com
 NODE_ENV=production
 PORT=3000
 
-# Optional: Git version for footer
-GIT_VERSION=1.0.0
 EOF
 
 chmod 640 "$ENV_DIR/environment"
