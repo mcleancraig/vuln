@@ -1,17 +1,16 @@
 This is for displaying vulnerabilities. It's a simple node app which reads username (without @) from your login, looks up machine names in table `users` and then looks those machines up in table `vulns`
 
 ## In all cases
-To run as an app or as a container, you'll need the env file. You can create this from the `env-template`
+To run as an app or as a container, you'll need to set the environment  
 
-## Running the app
-Set up the application in Azure with the correct callback address to the public URL we will be running the app on. Store tenant, client in the env file. Secret is a random secret suggest using something like `openssl rand -base64 25`
-Run the `db/mkdb.sh -a` script
-create CSVs of machine,username (email without @) and vulnerabilities per the schema in the `db/mkdb.sh` files  
-import tables using e.g.  
- `LOAD DATA INFILE '../vuln.csv' INTO TABLE vulnerabilities FIELDS ENCLOSED BY '"' TERMINATED BY ',' LINES TERMINATED BY '\n' IGNORE 1 ROWS  `
+## Deploy as node app
+Install MariaDB, and create the databases using the `db/mkdb.sh` script. You'll need a .env file for this (see `setup/setup-service.sh` for example contents)   
+Run the `setup/setup-service.sh` command, copy your .env to `/etc/node-vuln/environment` file accordingly  
+Import machine,username (without @), and vulnerabilities into the 'users' and 'vulns' table, following the schema in the `db/mkdb.sh` script. Example SQL is included in the `db/` folder  
 
-## Building the container
-edit the `docker-build.sh` file to match your needs - leave the environment as that's used by the app  
+
+## Building the container (needs fixing)
+Edit the `docker-build.sh` file to match your needs - create the `.env` file (see `setup/setup-service.sh` for example contents)  
 Run, and push to your repo of choice  
 Use the included compose file to pull/run the container  
 
