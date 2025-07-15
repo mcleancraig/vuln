@@ -1,0 +1,9 @@
+services:
+  vuln:
+    ports: 
+      - "3001:3000"
+    image: "mcleancraig/vuln-app:latest"
+    env_file: "./.env"
+    restart: unless-stopped
+    container-name: vuln-app
+    

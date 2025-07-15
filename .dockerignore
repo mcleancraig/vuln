@@ -6,6 +6,9 @@ Dockerfile
 .gitignore
 README.md
 .env
+docker-build.sh
+env-template
+docker-stack-compose.yml
 .nyc_output
 coverage
 .mocha
