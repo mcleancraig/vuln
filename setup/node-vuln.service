@@ -26,23 +26,21 @@ Environment=PORT=80
 EnvironmentFile=-/etc/node-vuln/environment
 
 # Security hardening
-# TODO: Figure out which one of these is fucking up memory allocation
-#NoNewPrivileges=true
-#PrivateTmp=true
-#PrivateDevices=true
-#ProtectHome=true
-#ProtectSystem=strict
-#ReadWritePaths=/opt/node-vuln/logs /tmp
-#ProtectKernelTunables=true
-#ProtectKernelModules=true
-#ProtectControlGroups=true
-#RestrictRealtime=true
-#RestrictNamespaces=true
-#LockPersonality=true
-#MemoryDenyWriteExecute=true
-#RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
-#SystemCallFilter=@system-service
-#SystemCallErrorNumber=EPERM
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/opt/node-vuln/logs /tmp
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictRealtime=true
+RestrictNamespaces=true
+LockPersonality=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
 
 # Needed for port 80 to bind
 AmbientCapabilities=CAP_NET_BIND_SERVICE
