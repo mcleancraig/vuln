@@ -10,6 +10,7 @@ const { execSync } = require('child_process');
 require('dotenv').config();
 
 const app = express();
+app.set('trust proxy',1);
 const port = process.env.PORT || 3000;
 
 // Get git version information
