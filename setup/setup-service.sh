@@ -12,7 +12,8 @@ APP_DIR="/opt/node-vuln"
 SERVICE_FILE="/etc/systemd/system/node-vuln.service"
 ENV_DIR="/etc/node-vuln"
 LOG_DIR="/var/log/node-vuln"
-
+[ $(basename $(pwd)) = "setup" ] && cd ..
+RUNDIR=$(pwd)
 echo "Setting up $APP_NAME systemd service..."
 
 # Create user and group
@@ -47,7 +48,8 @@ if [ -f "node-vuln.js" ]; then
     cp node-vuln.js "$APP_DIR/"
     cp package.json "$APP_DIR/"
     cp package-lock.json "$APP_DIR/" 2>/dev/null || true
-    
+    chown -R "$APP_USER:$APP_GROUP" "$APP_DIR"
+
     # Install dependencies
     echo "Installing Node.js dependencies..."
     cd "$APP_DIR"
@@ -96,7 +98,8 @@ echo "IMPORTANT: Edit this file with your actual configuration values!"
 
 # Install systemd service
 echo "Installing systemd service..."
-cp node-vuln.service "$SERVICE_FILE"
+echo $(pwd)
+cp ${RUNDIR}/setup/node-vuln.service "$SERVICE_FILE"
 systemctl daemon-reload
 
 # Create logrotate configuration
@@ -115,6 +118,8 @@ cat > /etc/logrotate.d/node-vuln << 'EOF'
 }
 EOF
 
+if [ $(systemctl status rsyslog) -eq 0 ]
+then
 # Create rsyslog configuration for better logging
 cat > /etc/rsyslog.d/30-node-vuln.conf << 'EOF'
 # node-vuln logging configuration
@@ -123,6 +128,7 @@ cat > /etc/rsyslog.d/30-node-vuln.conf << 'EOF'
 EOF
 
 systemctl restart rsyslog
+fi
 
 echo ""
 echo "Setup complete! Next steps:"
