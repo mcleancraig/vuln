@@ -67,15 +67,29 @@ echo "creating vuln table"
 mysql -u ${DB_USER} -h ${DB_HOST} -p${DB_PASSWORD} << EOF 
 USE ${DB_NAME};
 CREATE TABLE IF NOT EXISTS vulns (
-    plugin VARCHAR(255),
     ip VARCHAR(255),
     hostname VARCHAR(255),
-    description TEXT(100000),
-    details TEXT(100000),
-    remediation TEXT(10000),
+    plugin_id VARCHAR(255),
+    plugin VARCHAR(255),
+    owner VARCHAR(255),
+    category VARCHAR(255),
+    exception VARCHAR(255),
+    exc VARCHAR(255),
+    cisa_ke VARCHAR(255),
+    application VARCHAR(255),
+    severity VARCHAR(255),
+    patch_published VARCHAR(255),
+    age INT(11),
+    due_date VARCHAR(255),
     first_discovered VARCHAR(255),
     last_seen VARCHAR(255),
-    patch_published VARCHAR(255)
+    details TEXT(100000),
+    description TEXT(100000),
+    synopsis TEXT(100000),
+    remediation TEXT(10000),
+    cve TEXT(1000),
+    cpe TEXT(1000),
+    category TEXT(100)  
 );
 EOF
 }
