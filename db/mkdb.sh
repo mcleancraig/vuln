@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS vulns (
     plugin_id VARCHAR(255),
     plugin VARCHAR(255),
     owner VARCHAR(255),
-    category VARCHAR(255),
+    category_calc VARCHAR(255),
     exception VARCHAR(255),
     exc VARCHAR(255),
     cisa_ke VARCHAR(255),
