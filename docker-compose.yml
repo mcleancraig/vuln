@@ -2,7 +2,7 @@ services:
   vuln:
     ports: 
       - "3001:3000"
-    image: "mcleancraig/vuln-app:latest"
+    image: "mcleancraig/docker.io/mcleancraig/node-vuln:v1.0-4-gd91ab20-dirty"
     env_file: "./.env"
     restart: unless-stopped
     container-name: vuln-app

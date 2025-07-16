@@ -7,7 +7,7 @@ const validator = require('validator');
 const crypto = require('crypto');
 const { ConfidentialClientApplication } = require('@azure/msal-node');
 const { execSync } = require('child_process');
-require('dotenv').config({ path: '/etc/node-vuln/environment' });
+require('dotenv').config({ path: [ '/etc/node-vuln/environment', '.env'] });
 
 const app = express();
 app.set('trust proxy',1);

@@ -22,7 +22,7 @@ RUN npm ci --only=production
 COPY . .
 
 # Expose the port your app runs on (adjust as needed)
-EXPOSE 3000
+EXPOSE 80
 
 # Define the command to run your application
-CMD ["node", "app-sso.js"]
+CMD ["node", "node-vuln.js"]
