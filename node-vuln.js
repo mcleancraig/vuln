@@ -385,7 +385,7 @@ app.post('/search', ensureAuthenticated, csrfProtection, async (req, res) => {
         const hostnameParams = hostnames.map(hostname => `%${hostname}%`);
         
         const vulnerabilities = await conn.query(
-            `SELECT hostname,ip,age,application,plugin,description,remediation FROM vulns WHERE ${hostnameConditions.join(' OR ')} LIMIT 1000`, 
+            `SELECT hostname,ip,age,application,plugin,description,details,remediation FROM vulns WHERE ${hostnameConditions.join(' OR ')} LIMIT 1000`, 
             hostnameParams
         );
         
@@ -456,7 +456,7 @@ app.post('/search-hostname', ensureAuthenticated, csrfProtection, async (req, re
         
         // Search for vulnerabilities using partial matching
         const vulnerabilities = await conn.query(
-            "SELECT hostname,ip,age,application,plugin,description,remediation FROM vulns WHERE hostname LIKE ? LIMIT 1000", 
+            "SELECT hostname,ip,age,application,plugin,description,details,remediation FROM vulns WHERE hostname LIKE ? LIMIT 1000", 
             [`%${hostname}%`]
         );
         
