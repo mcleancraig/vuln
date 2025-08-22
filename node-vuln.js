@@ -70,6 +70,35 @@ function escapeHtml(unsafe) {
         .replace(/'/g, "&#039;");
 }
 
+// Function to get and format last updated date
+async function getLastUpdatedDate() {
+    let conn;
+    try {
+        conn = await pool.getConnection();
+        const result = await conn.query("SELECT date FROM lastupdated ORDER BY date DESC LIMIT 1");
+        
+        if (result.length > 0) {
+            const unixTimestamp = result[0].date;
+            const date = new Date(unixTimestamp * 1000); // Convert from seconds to milliseconds
+            
+            // Format as "DD Mmm YYYY"
+            const day = date.getDate().toString().padStart(2, '0');
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                           'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const month = months[date.getMonth()];
+            const year = date.getFullYear();
+            
+            return `${day} ${month} ${year}`;
+        }
+        return 'Unknown';
+    } catch (err) {
+        console.error('Failed to fetch last updated date:', err.message);
+        return 'Unknown';
+    } finally {
+        if (conn) conn.release();
+    }
+}
+
 // Validate environment variables
 const requiredEnvVars = ['TENANT_ID', 'CLIENT_ID', 'CLIENT_SECRET', 'SESSION_SECRET'];
 for (const envVar of requiredEnvVars) {
@@ -196,6 +225,7 @@ function getCommonStyles() {
             .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
             .form-group input { padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 300px; }
             .form-group input:focus { outline: none; border-color: #0078d4; }
+            .last-updated { color: #666; font-size: 14px; margin-bottom: 15px; font-style: italic; }
         </style>
     `;
 }
@@ -360,6 +390,9 @@ app.post('/search', ensureAuthenticated, csrfProtection, async (req, res) => {
     try {
         conn = await pool.getConnection();
         
+        // Get last updated date
+        const lastUpdated = await getLastUpdatedDate();
+        
         // Find all hostnames from the 'users' table
         const userRows = await conn.query("SELECT host FROM users WHERE user = ?", [username]);
         
@@ -395,6 +428,7 @@ app.post('/search', ensureAuthenticated, csrfProtection, async (req, res) => {
         let html = `<h2>Vulnerabilities for hostnames containing: ${safeHostnames}</h2>`;
         html += `<p><strong>Searched for user:</strong> ${safeEmail}</p>`;
         html += `<p><strong>Total hostnames found:</strong> ${hostnames.length}</p>`;
+        html += `<div class="last-updated">Last Updated: ${escapeHtml(lastUpdated)}</div>`;
         html += '<a href="/" style="margin-bottom: 20px; display: inline-block;">← Back to Search</a>';
         
         if (vulnerabilities.length > 0) {
@@ -454,6 +488,9 @@ app.post('/search-hostname', ensureAuthenticated, csrfProtection, async (req, re
     try {
         conn = await pool.getConnection();
         
+        // Get last updated date
+        const lastUpdated = await getLastUpdatedDate();
+        
         // Search for vulnerabilities using partial matching
         const vulnerabilities = await conn.query(
             "SELECT hostname,ip,age,application,plugin,description,details,remediation FROM vulns WHERE hostname LIKE ? LIMIT 1000", 
@@ -465,6 +502,7 @@ app.post('/search-hostname', ensureAuthenticated, csrfProtection, async (req, re
         
         let html = `<h2>Vulnerabilities for hostname containing: ${safeHostname}</h2>`;
         html += `<p><strong>Searched by:</strong> ${searchUser}</p>`;
+        html += `<div class="last-updated">Last Updated: ${escapeHtml(lastUpdated)}</div>`;
         html += '<a href="/hostname-search" style="margin-bottom: 20px; display: inline-block;">← Back to Hostname Search</a>';
         
         if (vulnerabilities.length > 0) {
