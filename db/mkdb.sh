@@ -61,6 +61,18 @@ EOF
 [ $? -ne 0 ] && bail "user table Create failed!" ; echo "Success"
 }
 
+createLastUpdated() {
+echo "creating lastupdated table"
+[ "${FORCE}" = "true" ] && mysql -u ${DB_USER} -h ${DB_HOST} -p${DB_PASSWORD} -e "USE ${DB_NAME}; DROP TABLE IF EXISTS lastupdated;" 
+mysql -u ${DB_USER} -h ${DB_HOST} -p${DB_PASSWORD} << EOF 
+USE ${DB_NAME};
+CREATE TABLE IF NOT EXISTS lastupdated (
+  date VARCHAR(255)
+);
+EOF
+[ $? -ne 0 ] && bail "lastupdated table Create failed!" ; echo "Success"
+}
+
 createVulns() {
 echo "creating vuln table"
 [ "${FORCE}" = "true" ] && mysql -u ${DB_USER} -h ${DB_HOST} -p${DB_PASSWORD} -e "USE ${DB_NAME}; DROP TABLE IF EXISTS vulns;" 
@@ -98,3 +110,4 @@ EOF
 [ "${D}" ] && createDb
 [ "${U}" ] && createUsers
 [ "${V}" ] && createVulns
+[ "${L}" ] && createLastUpdated
